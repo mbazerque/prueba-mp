@@ -14,7 +14,7 @@ export async function POST() {
           id:"1",
           title: 'Producto de prueba',
           quantity: 1,
-          unit_price: 1000,
+          unit_price: 20,
           currency_id: 'ARS',
         },
       ],
