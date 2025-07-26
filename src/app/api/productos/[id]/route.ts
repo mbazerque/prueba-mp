@@ -1,24 +1,23 @@
-import { prisma } from "@/app/lib/prisma"
 import { NextResponse } from "next/server"
 
-interface RouteParams {
-  params: {
-    id: string
-  }
-}
-
 // GET /api/productos/:id
-export async function GET(_request: Request, { params }: RouteParams) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const id = Number(params.id)
+    const id = parseInt(params.id)
 
-    if (!id || isNaN(id)) {
+    if (isNaN(id)) {
       return NextResponse.json(
         { error: "ID inválido" }, 
         { status: 400 }
       )
     }
 
+    // Importación dinámica para evitar problemas en build
+    const { prisma } = await import("@/app/lib/prisma")
+    
     const producto = await prisma.producto.findUnique({
       where: { id }
     })
@@ -41,11 +40,14 @@ export async function GET(_request: Request, { params }: RouteParams) {
 }
 
 // PUT /api/productos/:id
-export async function PUT(request: Request, { params }: RouteParams) {
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const id = Number(params.id)
+    const id = parseInt(params.id)
 
-    if (!id || isNaN(id)) {
+    if (isNaN(id)) {
       return NextResponse.json(
         { error: "ID inválido" }, 
         { status: 400 }
@@ -55,7 +57,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
     const body = await request.json()
     const { nombre, precio, stock, imagenUrl } = body
 
-    // Validar campos requeridos
     if (!nombre || precio === undefined || stock === undefined) {
       return NextResponse.json(
         { error: "Faltan campos obligatorios" }, 
@@ -63,6 +64,8 @@ export async function PUT(request: Request, { params }: RouteParams) {
       )
     }
 
+    const { prisma } = await import("@/app/lib/prisma")
+    
     const productoActualizado = await prisma.producto.update({
       where: { id },
       data: {
@@ -77,7 +80,6 @@ export async function PUT(request: Request, { params }: RouteParams) {
   } catch (error) {
     console.error('Error al actualizar producto:', error)
     
-    // Manejar error específico de Prisma
     if (error instanceof Error && error.message.includes('Record to update not found')) {
       return NextResponse.json(
         { error: "Producto no encontrado" }, 
@@ -93,17 +95,22 @@ export async function PUT(request: Request, { params }: RouteParams) {
 }
 
 // DELETE /api/productos/:id
-export async function DELETE(_request: Request, { params }: RouteParams) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const id = Number(params.id)
+    const id = parseInt(params.id)
 
-    if (!id || isNaN(id)) {
+    if (isNaN(id)) {
       return NextResponse.json(
         { error: "ID inválido" }, 
         { status: 400 }
       )
     }
 
+    const { prisma } = await import("@/app/lib/prisma")
+    
     await prisma.producto.delete({ 
       where: { id } 
     })
@@ -114,7 +121,6 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
   } catch (error) {
     console.error('Error al eliminar producto:', error)
     
-    // Manejar error específico de Prisma
     if (error instanceof Error && error.message.includes('Record to delete does not exist')) {
       return NextResponse.json(
         { error: "Producto no encontrado" }, 
