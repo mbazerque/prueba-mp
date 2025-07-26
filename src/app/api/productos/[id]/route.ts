@@ -1,15 +1,9 @@
 import { prisma } from "@/app/lib/prisma"
 import { NextResponse } from "next/server"
 
-type Params = {
-  params: {
-    id: string
-  }
-}
-
 // GET /api/productos/:id
-export async function GET(_: Request, { params }: Params) {
-  const id = parseInt(params.id)
+export async function GET(_request: Request, context: { params: { id: string } }) {
+  const id = parseInt(context.params.id)
 
   if (isNaN(id)) {
     return NextResponse.json({ error: "ID inválido" }, { status: 400 })
@@ -27,8 +21,8 @@ export async function GET(_: Request, { params }: Params) {
 }
 
 // PUT /api/productos/:id
-export async function PUT(request: Request, { params }: Params) {
-  const id = parseInt(params.id)
+export async function PUT(request: Request, context: { params: { id: string } }) {
+  const id = parseInt(context.params.id)
 
   if (isNaN(id)) {
     return NextResponse.json({ error: "ID inválido" }, { status: 400 })
@@ -54,8 +48,8 @@ export async function PUT(request: Request, { params }: Params) {
 }
 
 // DELETE /api/productos/:id
-export async function DELETE(_: Request, { params }: Params) {
-  const id = parseInt(params.id)
+export async function DELETE(_request: Request, context: { params: { id: string } }) {
+  const id = parseInt(context.params.id)
 
   if (isNaN(id)) {
     return NextResponse.json({ error: "ID inválido" }, { status: 400 })
