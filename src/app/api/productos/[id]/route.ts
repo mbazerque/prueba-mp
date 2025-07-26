@@ -1,37 +1,70 @@
 import { prisma } from "@/app/lib/prisma"
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server"
 
-interface Params {
-  params: { id: string }
+type Params = {
+  params: {
+    id: string
+  }
 }
 
-export async function GET(req: Request, { params }: Params) {
+// GET /api/productos/:id
+export async function GET(_: Request, { params }: Params) {
+  const id = parseInt(params.id)
+
+  if (isNaN(id)) {
+    return NextResponse.json({ error: "ID inválido" }, { status: 400 })
+  }
+
   const producto = await prisma.producto.findUnique({
-    where: { id: Number(params.id) },
+    where: { id },
   })
+
+  if (!producto) {
+    return NextResponse.json({ error: "Producto no encontrado" }, { status: 404 })
+  }
+
   return NextResponse.json(producto)
 }
 
-export async function PUT(req: Request, { params }: Params) {
-  const body = await req.json()
+// PUT /api/productos/:id
+export async function PUT(request: Request, { params }: Params) {
+  const id = parseInt(params.id)
 
-  const actualizado = await prisma.producto.update({
-    where: { id: Number(params.id) },
-    data: {
-      nombre: body.nombre,
-      precio: body.precio,
-      stock: body.stock,
-      imagenUrl: body.imagenUrl ?? null,
-    },
-  })
+  if (isNaN(id)) {
+    return NextResponse.json({ error: "ID inválido" }, { status: 400 })
+  }
 
-  return NextResponse.json(actualizado)
+  const body = await request.json()
+
+  try {
+    const productoActualizado = await prisma.producto.update({
+      where: { id },
+      data: {
+        nombre: body.nombre,
+        precio: body.precio,
+        stock: body.stock,
+        imagenUrl: body.imagenUrl ?? null,
+      },
+    })
+
+    return NextResponse.json(productoActualizado)
+  } catch (error) {
+    return NextResponse.json({ error: "No se pudo actualizar el producto" }, { status: 500 })
+  }
 }
 
-export async function DELETE(req: Request, { params }: Params) {
-  await prisma.producto.delete({
-    where: { id: Number(params.id) },
-  })
+// DELETE /api/productos/:id
+export async function DELETE(_: Request, { params }: Params) {
+  const id = parseInt(params.id)
 
-  return NextResponse.json({ message: 'Producto eliminado' })
+  if (isNaN(id)) {
+    return NextResponse.json({ error: "ID inválido" }, { status: 400 })
+  }
+
+  try {
+    await prisma.producto.delete({ where: { id } })
+    return NextResponse.json({ message: "Producto eliminado correctamente" })
+  } catch (error) {
+    return NextResponse.json({ error: "No se pudo eliminar el producto" }, { status: 500 })
+  }
 }
